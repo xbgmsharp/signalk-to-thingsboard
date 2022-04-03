@@ -50,7 +50,7 @@ module.exports = function(app) {
   plugin.id = id;
   plugin.name = 'MQTT ThingsBoard';
   plugin.description =
-    'Signal K server plugin to send all self SignalK numeric data, navigation.position and navigation.attitude to ThingsBoard';
+    'Signal K server plugin to send all self SignalK numeric data, navigation.position, navigation.attitude and navigation.state to ThingsBoard';
 
   plugin.schema = {
     title: 'MQTT ThingsBoard',
@@ -59,7 +59,7 @@ module.exports = function(app) {
     properties: {
       sendToRemote: {
         type: 'boolean',
-        title: 'Send all self SignalK numeric data, navigation.position and navigation.attitude to an MQTT remote server',
+        title: 'Send all self SignalK numeric data, navigation.position, navigation.attitude and navigation.state to an ThingsBoard MQTT remote server',
         description:
           `clientId and topic prefix are set to vessels.${data.clientId}`,
         default: false,
@@ -243,11 +243,6 @@ module.exports = function(app) {
             {path: "navigation.attitude.yaw", value: values['yaw'], timestamp: timestamp}
           ];
       }
-      else if (path === "navigation.state") {
-        message_arr = [
-            {path: "navigation.state", value: value, timestamp: timestamp}
-        ];
-      }
       else if (path === "") {
           publishAttributes();
           return;
@@ -257,7 +252,12 @@ module.exports = function(app) {
           return;
       }
     } else {
-        if (isNaN(value) || !isfloatField(value) || !isFinite(value)) {
+        if (path === "navigation.state") { // value is a string
+            message_arr = [
+                {path: "navigation.state", value: value, timestamp: timestamp}
+            ];
+        }
+        else if (isNaN(value) || !isfloatField(value) || !isFinite(value)) {
           app.debug(`Skipping path '${path}' because value is invalid, '${value}'`);
           return;
         }
